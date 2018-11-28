@@ -138,6 +138,19 @@ public class ProductSelectionTest {
 	}
 	
 	@Test
+	public void testPressReturnCoinsButtonWith40CentsInsertedShouldReturnListOfCoins() {
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.NICKEL);
+		machine.returnCoins();
+		List<Coin> list = new ArrayList<>();
+		list.add(Coin.QUARTER);
+		list.add(Coin.DIME);
+		list.add(Coin.NICKEL);
+		assertEquals(list, machine.emptyCoinReturn());
+	}
+	
+	@Test
 	public void testPressReturnCoinsButtonWith40CentsInsertedShouldReturn40Cents() {
 		machine.insert(Coin.QUARTER);
 		machine.insert(Coin.DIME);
