@@ -1,5 +1,6 @@
 package service;
 
+import exceptions.NotAcceptedCoinException;
 import model.Coin;
 
 public class VendingMachine {
@@ -17,7 +18,7 @@ public class VendingMachine {
 		return nickelCount;
 	}
 
-	public void insert(Coin coin) {
+	public void insert(Coin coin) throws NotAcceptedCoinException {
 		switch(coin) {
 		case QUARTER:
 			quarterCount++;
@@ -28,6 +29,8 @@ public class VendingMachine {
 		case DIME:
 			dimeCount++;
 			break;
+		case PENNY:
+			throw new NotAcceptedCoinException("Please insert a Nickel, Dime, or Quarter");
 		}
 	}
 
