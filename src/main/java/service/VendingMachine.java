@@ -200,8 +200,8 @@ public class VendingMachine {
 			display = "SOLD OUT";
 		} else if (hasEnoughMoneyForProduct(product) && canMakeChangeWithProduct(product)) {
 			currentInsertedAmount -= getSelectedProductPrice(product);
-			makeChangeForCoinReturn(currentInsertedAmount);
 			insertedCoins.clear();
+			makeChangeForCoinReturn(currentInsertedAmount);
 			display = "THANK YOU";
 			int amount = productCount.get(product);
 			amount--;
@@ -232,14 +232,17 @@ public class VendingMachine {
 	 * @return Returns the amount of money the machine can't make into change
 	 */
 	private double makeChangeForCoinReturn(Double amountToMake) {
-		double changeToMake = Double.parseDouble(String.format("%.2f", amountToMake));
+		if (!insertedCoins.isEmpty()) {
+			coinReturn.addAll(insertedCoins);
+		}
+		double changeToMake = Double.parseDouble(String.format("%.2f", amountToMake - coinListToPrice(insertedCoins)));
 		changeToMake = makeChangeWithQuarters(changeToMake);
 		changeToMake = makeChangeWithDimes(changeToMake);
 		changeToMake = makeChangeWithNickels(changeToMake);
 		// Not returning pennies as they can't be inserted
 		return changeToMake;
 	}
-
+	
 	/**
 	 * Used in makeChangeForCoinReturn(Double amountToMake) to chain together the
 	 * process of adding the different coins to the coin return area
@@ -251,9 +254,11 @@ public class VendingMachine {
 	 */
 	private double makeChangeWithNickels(double changeToMake) {
 		double sum = changeToMake;
-		while (sum - coinToPrice(Coin.NICKEL) >= 0) {
+		while (nickelCount > 0 && sum - coinToPrice(Coin.NICKEL) >= 0) {
 			sum -= coinToPrice(Coin.NICKEL);
+			sum = Double.parseDouble(String.format("%.2f", sum));
 			coinReturn.add(Coin.NICKEL);
+			nickelCount--;
 		}
 		return Double.parseDouble(String.format("%.2f", sum));
 	}
@@ -269,9 +274,11 @@ public class VendingMachine {
 	 */
 	private double makeChangeWithDimes(double changeToMake) {
 		double sum = changeToMake;
-		while (sum - coinToPrice(Coin.DIME) >= 0) {
+		while (dimeCount > 0 && sum - coinToPrice(Coin.DIME) >= 0) {
 			sum -= coinToPrice(Coin.DIME);
+			sum = Double.parseDouble(String.format("%.2f", sum));
 			coinReturn.add(Coin.DIME);
+			dimeCount--;
 		}
 		return Double.parseDouble(String.format("%.2f", sum));
 	}
@@ -287,9 +294,12 @@ public class VendingMachine {
 	 */
 	private double makeChangeWithQuarters(double changeToMake) {
 		double sum = changeToMake;
-		while (sum - coinToPrice(Coin.QUARTER) >= 0) {
+		double checkLegal = canMakeChangeWithDimes(sum - coinToPrice(Coin.QUARTER));
+		while (quarterCount > 0 && sum - coinToPrice(Coin.QUARTER) >= 0 && canMakeChangeWithNickels(checkLegal) == 0) {
 			sum -= coinToPrice(Coin.QUARTER);
+			sum = Double.parseDouble(String.format("%.2f", sum));
 			coinReturn.add(Coin.QUARTER);
+			quarterCount--;
 		}
 		return Double.parseDouble(String.format("%.2f", sum));
 	}
