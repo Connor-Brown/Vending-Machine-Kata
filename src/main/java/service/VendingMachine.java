@@ -38,9 +38,9 @@ public class VendingMachine {
 	 */
 	private String display;
 	/**
-	 * The amount of money the user has inserted
+	 * The amount of money the user has inserted as a list
 	 */
-	private double currentInsertedAmount;
+	private List<Coin> insertedCoins;
 	/**
 	 * If true, there is a one time message to display. Used for thank you, sold
 	 * out, and Price messages
@@ -65,7 +65,7 @@ public class VendingMachine {
 	 * COIN All the products and counts are initialized the their starting values
 	 * according to startingProductCount and startingCoinCount respectively
 	 * 
-	 * The amount of user-inputed coins is set to 0
+	 * The list of user inputed coins is set to a new ArrayList
 	 * 
 	 * The coin return is set to be empty
 	 */
@@ -75,7 +75,7 @@ public class VendingMachine {
 		addXCoins(Coin.QUARTER, startingCoinCount);
 		products = initializeProducts();
 		display = "INSERT COIN";
-		currentInsertedAmount = 0;
+		insertedCoins = new ArrayList<>();
 		hasTemporaryDisplay = false;
 		coinReturn = new ArrayList<>();
 	}
@@ -114,15 +114,15 @@ public class VendingMachine {
 		switch (coin) {
 		case QUARTER:
 			quarterCount++;
-			currentInsertedAmount += .25;
+			insertedCoins.add(coin);
 			break;
 		case NICKEL:
 			nickelCount++;
-			currentInsertedAmount += .05;
+			insertedCoins.add(coin);
 			break;
 		case DIME:
 			dimeCount++;
-			currentInsertedAmount += .10;
+			insertedCoins.add(coin);
 			break;
 		default:
 			coinReturn.add(coin);
@@ -195,12 +195,13 @@ public class VendingMachine {
 		if (!products.containsKey(product))
 			throw new InvalidProductException("The vending machine does not contain " + product);
 		String returner = null;
-		currentInsertedAmount = Double.parseDouble(String.format("%.2f", currentInsertedAmount));
+		double currentInsertedAmount = Double.parseDouble(String.format("%.2f", coinListToPrice(insertedCoins)));
 		if (!hasProduct(product)) {
 			display = "SOLD OUT";
 		} else if (hasEnoughMoneyForProduct(product) && canMakeChangeWithProduct(product)) {
 			currentInsertedAmount -= getSelectedProductPrice(product);
-			currentInsertedAmount = makeChangeForCoinReturn(currentInsertedAmount);
+			makeChangeForCoinReturn(currentInsertedAmount);
+			insertedCoins.clear();
 			display = "THANK YOU";
 			int amount = productCount.get(product);
 			amount--;
@@ -303,7 +304,7 @@ public class VendingMachine {
 	 *         given item
 	 */
 	private boolean hasEnoughMoneyForProduct(String product) {
-		return currentInsertedAmount >= getSelectedProductPrice(product);
+		return coinListToPrice(insertedCoins) >= getSelectedProductPrice(product);
 	}
 
 	/**
@@ -336,10 +337,10 @@ public class VendingMachine {
 	private void setNormalDisplay() {
 		if (!canMakeChangeForAllItems()) {
 			display = "EXACT CHANGE ONLY";
-		} else if (currentInsertedAmount == 0)
+		} else if (coinListToPrice(insertedCoins) == 0)
 			display = "INSERT COIN";
 		else
-			display = "$" + String.format("%.2f", currentInsertedAmount);
+			display = "$" + String.format("%.2f", coinListToPrice(insertedCoins));
 	}
 
 	/**
@@ -434,7 +435,7 @@ public class VendingMachine {
 		for (Coin c : coins) {
 			sum += coinToPrice(c);
 		}
-		return sum;
+		return Double.parseDouble(String.format("%.2f", sum));
 	}
 
 	/**
@@ -474,7 +475,8 @@ public class VendingMachine {
 	 * Transfers all user inputed coins into the coin return area
 	 */
 	public void returnCoins() {
-		currentInsertedAmount = makeChangeForCoinReturn(currentInsertedAmount);
+		makeChangeForCoinReturn(coinListToPrice(insertedCoins));
+		insertedCoins.clear();
 	}
 
 	/**
@@ -488,7 +490,7 @@ public class VendingMachine {
 
 		// currently converts all inserted amount to nickels as there is currently not a
 		// memory for exactly what coins are inserted
-		double temp = currentInsertedAmount;
+		double temp = coinListToPrice(insertedCoins);
 		double nickelAmount = coinToPrice(Coin.NICKEL);
 		while (temp - nickelAmount >= 0) {
 			nickelCount += nickelAmount;
