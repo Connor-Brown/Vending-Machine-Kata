@@ -3,6 +3,7 @@ package machineFeaturesTest;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
@@ -144,5 +145,110 @@ public class ProductSelectionTest {
 		machine.returnCoins();
 		assertEquals(.40, machine.coinListToPrice(machine.emptyCoinReturn()), .001);
 	}
-
+	
+	@Test
+	public void testNeedExactCoinAmountForColaGivenExactCoinAmountShouldReturnCola() throws InvalidProductException {
+		machine.clearCoinInventory();
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		assertEquals("Cola", machine.select("Cola"));
+	}
+	
+	@Test
+	public void testNeedExactCoinAmountForChipsGivenExactCoinAmountShouldReturnChips() throws InvalidProductException {
+		machine.clearCoinInventory();
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		assertEquals("Chips", machine.select("Chips"));
+	}
+	
+	@Test
+	public void testNeedExactCoinAmountForCandyGivenExactCoinAmountShouldReturnCandy() throws InvalidProductException {
+		machine.clearCoinInventory();
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.NICKEL);
+		assertEquals("Candy", machine.select("Candy"));
+	}
+	
+	@Test
+	public void testNeedExactCoinAmountGivenForColaGivenExtraAmountShouldReturnNull() throws InvalidProductException {
+		machine.clearCoinInventory();
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.DIME);
+		assertEquals(null, machine.select("Cola"));
+	}
+	@Test
+	public void testNeedExactCoinAmountGivenForColaGivenExtraAmountShouldReturnColaWithCoinsReturned() throws InvalidProductException {
+		machine.clearCoinInventory();
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.QUARTER);
+		assertEquals("Cola", machine.select("Cola"));
+		assertEquals(.3, machine.coinListToPrice(machine.emptyCoinReturn()), 0.001);
+	}
+	
+	@Test
+	public void testGivenMoreThanEnoughCoinButCanStillMakeChangeShouldReturnColaWithCoinsReturned() throws InvalidProductException {
+		machine.clearCoinInventory();
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		assertEquals("Cola", machine.select("Cola"));
+		List<Coin> fauxCoinList = new ArrayList<>();
+		fauxCoinList.add(Coin.QUARTER);
+		assertEquals(fauxCoinList, machine.emptyCoinReturn());
+	}
+	
+	@Test
+	public void testOtherGivenMoreThanEnoughCoinButCanStillMakeChangeShouldReturnColaWithCoinsReturned() throws InvalidProductException {
+		machine.clearCoinInventory();
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.DIME);
+		assertEquals("Cola", machine.select("Cola"));
+		List<Coin> fauxCoinList = new ArrayList<>();
+		fauxCoinList.add(Coin.DIME);
+		assertEquals(fauxCoinList, machine.emptyCoinReturn());
+	}
+	
+	@Test
+	public void testSoldOutColaShouldReturnSoldOut() throws InvalidProductException {
+		machine.clearProductInventory();
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		assertEquals(null, machine.select("Cola"));
+		machine.returnCoins();
+		assertEquals(1, machine.coinListToPrice(machine.emptyCoinReturn()), 0.001);
+	}
+	
+	@Test
+	public void testGrabLastItemAndTryToGrabAgainShouldReturnChipsAndNull() throws InvalidProductException {
+		machine.clearProductInventory();
+		machine.addXProducts("Chips", 1);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		assertEquals("Chips", machine.select("Chips"));
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		assertEquals(null, machine.select("Chips"));
+	}
+	
 }

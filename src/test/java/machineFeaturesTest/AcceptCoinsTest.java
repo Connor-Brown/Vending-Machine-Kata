@@ -19,6 +19,7 @@ public class AcceptCoinsTest {
 	public void setUp() {
 		//create machine
 		machine = new VendingMachine();
+		machine.clearCoinInventory();
 	}
 	
 	@Test
