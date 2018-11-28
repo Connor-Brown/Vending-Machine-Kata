@@ -1,2 +1,4 @@
 model\Coin.class
+exceptions\InvalidProductException.class
+service\VendingMachine$1.class
 service\VendingMachine.class
