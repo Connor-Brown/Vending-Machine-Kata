@@ -2,6 +2,7 @@ package service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -14,16 +15,20 @@ public class VendingMachine {
 	private int dimeCount;
 	private int quarterCount;
 	private Map<String, Double> products;
+	private Map<String, Integer> productCount;
 	private String display;
 	private double currentInsertedAmount;
 	private boolean hasTemporaryDisplay;
 	private List<Coin> coinReturn;
 
+	/**
+	 * Machine is created with 50 nickels, dimes and quarters inside of it
+	 */
 	public VendingMachine() {
-		nickelCount = 0;
-		dimeCount = 0;
-		quarterCount = 0;
-		products = initializeProductMap();
+		addXCoins(Coin.NICKEL, 50);
+		addXCoins(Coin.DIME, 50);
+		addXCoins(Coin.QUARTER, 50);
+		products = initializeProducts();
 		display = "INSERT COIN";
 		currentInsertedAmount = 0;
 		hasTemporaryDisplay = false;
@@ -32,6 +37,14 @@ public class VendingMachine {
 	
 	public int getNickels() {
 		return nickelCount;
+	}
+	
+	public int getDimes() {
+		return dimeCount;
+	}
+
+	public int getQuarters() {
+		return quarterCount;
 	}
 
 	public void insert(Coin coin) {
@@ -52,27 +65,38 @@ public class VendingMachine {
 			coinReturn.add(coin);
 			System.out.println("Please insert a Nickel, Dime, or Quarter");
 		}
-		display = "$"+String.format("%.2f", currentInsertedAmount);
-	}
-
-	public int getDimes() {
-		return dimeCount;
-	}
-
-	public int getQuarters() {
-		return quarterCount;
+		hasTemporaryDisplay = false;
 	}
 
 	public Map<String, Double> getProductMap() {
 		return products;
 	}
 
-	private Map<String, Double> initializeProductMap() {
+	private Map<String, Double> initializeProducts() {
 		products = new HashMap<>();
-		products.put("Cola", new Double(1));
-		products.put("Chips", new Double(.5));
-		products.put("Candy", new Double(.65));
+		productCount = new HashMap<>();
+		addXProducts("Cola", 12);
+		addXProducts("Chips", 12);
+		addXProducts("Candy", 12);
 		return products;
+	}
+
+	public void addXProducts(String product, int amount) {
+		int beforeValue = 0;
+		if(productCount.containsKey(product))
+			beforeValue +=productCount.get(product);
+		switch(product) {
+		case "Cola":
+			products.put("Cola", new Double(1));
+			break;
+		case "Chips":
+			products.put("Chips", new Double(.5));
+			break;
+		case "Candy":
+			products.put("Candy", new Double(.65));
+			break;
+		}
+		productCount.put(product, amount+beforeValue);
 	}
 
 	public String select(String product) throws InvalidProductException {
@@ -80,16 +104,26 @@ public class VendingMachine {
 			throw new InvalidProductException("The vending machine does not contain "+product);
 		String returner = null;
 		currentInsertedAmount = Double.parseDouble(String.format("%.2f", currentInsertedAmount));
-		if(hasEnoughMoneyForProduct(product)) {
+		if(!hasProduct(product)) {
+			display = "SOLD OUT";
+		}
+		else if(hasEnoughMoneyForProduct(product) && canMakeChangeWithProduct(product)) {
 			currentInsertedAmount -= getSelectedProductPrice(product);
 			currentInsertedAmount = makeChangeForCoinReturn(currentInsertedAmount);
 			display = "THANK YOU";
+			int amount = productCount.get(product);
+			amount--;
+			productCount.put(product, amount);
 			returner = product;
 		} else {
 			display = "PRICE $"+String.format("%.2f", getSelectedProductPrice(product));
 		}
 		hasTemporaryDisplay = true;
 		return returner;
+	}
+
+	private boolean hasProduct(String product) {
+		return productCount.get(product) > 0;
 	}
 
 	private double makeChangeForCoinReturn(Double amountToMake) {
@@ -148,10 +182,58 @@ public class VendingMachine {
 	}
 
 	private void setNormalDisplay() {
-		if(currentInsertedAmount == 0)
+		if(!canMakeChangeForAllItems()) {
+			display = "EXACT CHANGE ONLY";
+		}
+		else if(currentInsertedAmount == 0)
 			display = "INSERT COIN";
 		else
 			display = "$"+String.format("%.2f", currentInsertedAmount);
+	}
+
+	private boolean canMakeChangeForAllItems() {
+		Iterator<String> iter = products.keySet().iterator();
+		while(iter.hasNext()) {
+			String productName = iter.next();
+			if(!canMakeChangeWithProduct(productName))
+				return false;
+		}
+		return true;
+	}
+
+	private boolean canMakeChangeWithProduct(String productName) {
+		double value = Double.parseDouble(String.format("%.2f", products.get(productName)));
+		value = canMakeChangeWithQuarters(value);
+		value = canMakeChangeWithDimes(value);
+		value = canMakeChangeWithNickels(value);
+		return  Double.parseDouble(String.format("%.2f", value)) == 0;
+	}
+
+	private double canMakeChangeWithNickels(double value) {
+		int temp = nickelCount;
+		while(temp > 0 && (value - coinToPrice(Coin.NICKEL) >= 0)) {
+			value -= coinToPrice(Coin.NICKEL);
+			temp--;
+		}
+		return value;
+	}
+
+	private double canMakeChangeWithDimes(double value) {
+		int temp = dimeCount;
+		while(temp > 0 && (value - coinToPrice(Coin.DIME) >= 0)) {
+			value -= coinToPrice(Coin.DIME);
+			temp--;
+		}
+		return value;
+	}
+
+	private double canMakeChangeWithQuarters(double value) {
+		int temp = quarterCount;
+		while(temp > 0 && (value - coinToPrice(Coin.QUARTER) >= 0)) {
+			value -= coinToPrice(Coin.QUARTER);
+			temp--;
+		}
+		return value;
 	}
 
 	public double coinListToPrice(List<Coin> coins) {
@@ -186,6 +268,52 @@ public class VendingMachine {
 
 	public void returnCoins() {
 		currentInsertedAmount = makeChangeForCoinReturn(currentInsertedAmount);
+	}
+
+	/**
+	 * Empties to coins in the machine (except for any coins in a current transaction)
+	 */
+	public void clearCoinInventory() {
+		nickelCount = 0;
+		dimeCount = 0;
+		quarterCount = 0;
+		
+		//currently converts all inserted amount to nickels as there is currently not a memory for exactly what coins are inserted
+		double temp = currentInsertedAmount; 
+		double nickelAmount = coinToPrice(Coin.NICKEL);
+		while(temp - nickelAmount >= 0) {
+			nickelCount += nickelAmount;
+			temp -= nickelAmount;
+		}
+	}
+
+	/**
+	 * Used for refilling the machine
+	 * @param coin The type of coin to add
+	 * @param amount The amount of coins to add of the given type
+	 */
+	public void addXCoins(Coin coin, int amount) {
+		switch(coin) {
+		case NICKEL:
+			nickelCount += amount;
+			break;
+		case DIME:
+			dimeCount += amount;
+			break;
+		case QUARTER:
+			quarterCount += amount;
+			break;
+		default:
+			break;
+		}
+	}
+
+	public void clearProductInventory() {
+		Iterator<String> iter = productCount.keySet().iterator();
+		while(iter.hasNext()) {
+			String key = iter.next();
+			productCount.put(key, 0);
+		}
 	}
 	
 }

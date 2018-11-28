@@ -104,5 +104,70 @@ public class DisplayTest {
 		machine.insert(Coin.PENNY);
 		assertEquals("$0.65", machine.getDisplay());
 	}
+	
+	@Test
+	public void checkUnableToMakeChangeForAnythingShouldShowExactChange() {
+		//This test also works for Cola, since: if the machine couldn't make change for chips, it definitely can't for cola
+		machine.clearCoinInventory();
+		assertEquals("EXACT CHANGE ONLY", machine.getDisplay());
+	}
+	
+	@Test
+	public void checkUnableToMakeChangeForChipsShouldShowExactChange() {
+		//if it can't make change for chips, it can't make change for anything
+		machine.clearCoinInventory();
+		machine.insert(Coin.NICKEL);
+		machine.insert(Coin.NICKEL);
+		machine.insert(Coin.NICKEL);
+		machine.insert(Coin.NICKEL);
+		machine.insert(Coin.NICKEL);
+		machine.insert(Coin.NICKEL);
+		machine.insert(Coin.NICKEL);
+		machine.insert(Coin.NICKEL);
+		machine.insert(Coin.NICKEL);
+		assertEquals("EXACT CHANGE ONLY", machine.getDisplay());
+	}
+	
+	@Test
+	public void checkCanMakeChangeWithChipsButNotColaShouldReturnShowExactChange() {
+		machine.clearCoinInventory();
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		assertEquals("EXACT CHANGE ONLY", machine.getDisplay());
+	}
+	
+	@Test
+	public void checkCanMakeChangeWithChipsAndColaButNotCandyShouldReturnShowExactChange() {
+		machine.clearCoinInventory();
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		assertEquals("EXACT CHANGE ONLY", machine.getDisplay());
+	}
+	
+	@Test
+	public void checkCanMakeChangeWithEverythingButJustBarelyShouldReturnInsertCoin() {
+		machine.clearCoinInventory();
+		machine.addXCoins(Coin.QUARTER, 4);
+		machine.addXCoins(Coin.DIME, 1);
+		machine.addXCoins(Coin.NICKEL, 1);
+		assertEquals("INSERT COIN", machine.getDisplay());
+	}
+	
+	@Test
+	public void testSoldOutColaShouldReturnSoldOut() throws InvalidProductException {
+		machine.clearProductInventory();
+		machine.select("Cola");
+		assertEquals("SOLD OUT", machine.getDisplay());
+	}
+	
+	@Test
+	public void testSoldOutColaRecheckShouldReturnSoldOutAndInsertCoin() throws InvalidProductException {
+		machine.clearProductInventory();
+		machine.select("Cola");
+		assertEquals("SOLD OUT", machine.getDisplay());
+		assertEquals("INSERT COIN", machine.getDisplay());
+	}
 
 }
