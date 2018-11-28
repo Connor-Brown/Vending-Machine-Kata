@@ -26,3 +26,7 @@ hs_err_pid*
 *.xml
 *.txt
 *.lst
+
+# Other project files #
+.project
+.settings/
