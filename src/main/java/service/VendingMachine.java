@@ -1,10 +1,11 @@
 package service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import exceptions.InvalidProductException;
-import exceptions.NotAcceptedCoinException;
 import model.Coin;
 
 public class VendingMachine {
@@ -16,6 +17,7 @@ public class VendingMachine {
 	private String display;
 	private double currentInsertedAmount;
 	private boolean hasTemporaryDisplay;
+	private List<Coin> coinReturn;
 
 	public VendingMachine() {
 		nickelCount = 0;
@@ -25,13 +27,14 @@ public class VendingMachine {
 		display = "INSERT COIN";
 		currentInsertedAmount = 0;
 		hasTemporaryDisplay = false;
+		coinReturn = new ArrayList<>();
 	}
 	
 	public int getNickels() {
 		return nickelCount;
 	}
 
-	public void insert(Coin coin) throws NotAcceptedCoinException {
+	public void insert(Coin coin) {
 		switch(coin) {
 		case QUARTER:
 			quarterCount++;
@@ -45,8 +48,9 @@ public class VendingMachine {
 			dimeCount++;
 			currentInsertedAmount += .10;
 			break;
-		case PENNY:
-			throw new NotAcceptedCoinException("Please insert a Nickel, Dime, or Quarter");
+		default:
+			coinReturn.add(coin);
+			System.out.println("Please insert a Nickel, Dime, or Quarter");
 		}
 		display = "$"+String.format("%.2f", currentInsertedAmount);
 	}
@@ -75,8 +79,10 @@ public class VendingMachine {
 		if(!products.containsKey(product))
 			throw new InvalidProductException("The vending machine does not contain "+product);
 		String returner = null;
+		currentInsertedAmount = Double.parseDouble(String.format("%.2f", currentInsertedAmount));
 		if(hasEnoughMoneyForProduct(product)) {
-			//TODO send extra amount to coin return
+			currentInsertedAmount -= getSelectedProductPrice(product);
+			currentInsertedAmount = makeChangeForCoinReturn(currentInsertedAmount);
 			display = "THANK YOU";
 			returner = product;
 		} else {
@@ -84,6 +90,42 @@ public class VendingMachine {
 		}
 		hasTemporaryDisplay = true;
 		return returner;
+	}
+
+	private double makeChangeForCoinReturn(Double amountToMake) {
+		double changeToMake = Double.parseDouble(String.format("%.2f", amountToMake));
+		changeToMake = makeChangeWithQuarters(changeToMake);
+		changeToMake = makeChangeWithDimes(changeToMake);
+		changeToMake = makeChangeWithNickels(changeToMake);
+		//Not returning pennies as they can't be inserted
+		return changeToMake;
+	}
+
+	private double makeChangeWithNickels(double changeToMake) {
+		double sum = changeToMake;
+		while(sum - coinToPrice(Coin.NICKEL) >= 0) {
+			sum -= coinToPrice(Coin.NICKEL);
+			coinReturn.add(Coin.NICKEL);
+		}
+		return Double.parseDouble(String.format("%.2f", sum));
+	}
+
+	private double makeChangeWithDimes(double changeToMake) {
+		double sum = changeToMake;
+		while(sum - coinToPrice(Coin.DIME) >= 0) {
+			sum -= coinToPrice(Coin.DIME);
+			coinReturn.add(Coin.DIME);
+		}
+		return Double.parseDouble(String.format("%.2f", sum));
+	}
+
+	private double makeChangeWithQuarters(double changeToMake) {
+		double sum = changeToMake;
+		while(sum - coinToPrice(Coin.QUARTER) >= 0) {
+			sum -= coinToPrice(Coin.QUARTER);
+			coinReturn.add(Coin.QUARTER);
+		}
+		return Double.parseDouble(String.format("%.2f", sum));
 	}
 
 	private boolean hasEnoughMoneyForProduct(String product) {
@@ -101,6 +143,7 @@ public class VendingMachine {
 			setNormalDisplay();
 			return tempDisplay;
 		}
+		setNormalDisplay();
 		return display;
 	}
 
@@ -110,7 +153,39 @@ public class VendingMachine {
 		else
 			display = "$"+String.format("%.2f", currentInsertedAmount);
 	}
-	
-	
 
+	public double coinListToPrice(List<Coin> coins) {
+		double sum = 0;
+		for(Coin c : coins) {
+			sum += coinToPrice(c);
+		}
+		return sum;
+	}
+
+	private double coinToPrice(Coin c) {
+		switch(c) {
+		case QUARTER:
+			return 0.25;
+		case DIME:
+			return 0.10;
+		case NICKEL:
+			return 0.05;
+		case PENNY:
+			return 0.01;
+		}
+		return 0;
+	}
+
+	public List<Coin> emptyCoinReturn() {
+		List<Coin> temp = new ArrayList<>();
+		for(Coin c : coinReturn)
+			temp.add(c);
+		coinReturn.clear();
+		return temp;
+	}
+
+	public void returnCoins() {
+		currentInsertedAmount = makeChangeForCoinReturn(currentInsertedAmount);
+	}
+	
 }

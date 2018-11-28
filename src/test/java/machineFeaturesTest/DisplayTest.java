@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import exceptions.InvalidProductException;
-import exceptions.NotAcceptedCoinException;
 import model.Coin;
 import service.VendingMachine;
 
@@ -34,7 +33,7 @@ public class DisplayTest {
 
 	@Test
 	public void checkDisplayAfterSelectingColaWithNotEnoughMoneyInsertedShouldDisplayPriceOfCola()
-			throws InvalidProductException, NotAcceptedCoinException {
+			throws InvalidProductException {
 		machine.insert(Coin.NICKEL);
 		machine.select("Cola");
 		assertEquals("PRICE $1.00", machine.getDisplay());
@@ -44,7 +43,7 @@ public class DisplayTest {
 	
 	@Test
 	public void checkDisplayAfterSelectingChipsWithNotEnoughMoneyInsertedShouldDisplayPriceOfChips()
-			throws InvalidProductException, NotAcceptedCoinException {
+			throws InvalidProductException {
 		machine.insert(Coin.NICKEL);
 		machine.select("Chips");
 		assertEquals("PRICE $0.50", machine.getDisplay());
@@ -54,7 +53,7 @@ public class DisplayTest {
 	
 	@Test
 	public void checkDisplayAfterSelectingCandyWithNotEnoughMoneyInsertedShouldDisplayPriceOfCandy()
-			throws InvalidProductException, NotAcceptedCoinException {
+			throws InvalidProductException {
 		machine.insert(Coin.NICKEL);
 		machine.select("Candy");
 		assertEquals("PRICE $0.65", machine.getDisplay());
@@ -63,31 +62,47 @@ public class DisplayTest {
 	}
 
 	@Test
-	public void checkDisplayAfterInsertingNickelShouldReturnFiveCentsInMachine() throws NotAcceptedCoinException {
+	public void checkDisplayAfterInsertingNickelShouldReturnFiveCentsInMachine()  {
 		machine.insert(Coin.NICKEL);
 		assertEquals("$0.05", machine.getDisplay());
 	}
 	
 	@Test
-	public void checkDisplayAfterInsertingDimeShouldReturn10CentsInMachine() throws NotAcceptedCoinException {
+	public void checkDisplayAfterInsertingDimeShouldReturn10CentsInMachine()  {
 		machine.insert(Coin.DIME);
 		assertEquals("$0.10", machine.getDisplay());
 	}
 	
 	@Test
-	public void checkDisplayAfterInsertingQuarterShouldReturnTwentyFiveCentsInMachine() throws NotAcceptedCoinException {
+	public void checkDisplayAfterInsertingQuarterShouldReturnTwentyFiveCentsInMachine()  {
 		machine.insert(Coin.QUARTER);
 		assertEquals("$0.25", machine.getDisplay());
 	}
 	
 	@Test
-	public void checkDisplayAfterInserting75CentsShouldReturn75CentsInMachine() throws NotAcceptedCoinException {
+	public void checkDisplayAfterInserting75CentsShouldReturn75CentsInMachine()  {
 		machine.insert(Coin.NICKEL);
 		machine.insert(Coin.QUARTER);
 		machine.insert(Coin.DIME);
 		machine.insert(Coin.DIME);
 		machine.insert(Coin.QUARTER);
 		assertEquals("$0.75", machine.getDisplay());
+	}
+	
+	@Test
+	public void checInsertInvalidCoinInUninsertedMachineShouldShowInsertCoin()  {
+		machine.insert(Coin.PENNY);
+		assertEquals("INSERT COIN", machine.getDisplay());
+	}
+	
+	@Test
+	public void checInsertInvalidCoinInMachineWithOtherInsertedCoinsShouldShowOtherCoinsValue() {
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.NICKEL);
+		machine.insert(Coin.PENNY);
+		assertEquals("$0.65", machine.getDisplay());
 	}
 
 }
