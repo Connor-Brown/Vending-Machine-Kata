@@ -82,6 +82,7 @@ public class AcceptCoinsTest {
 	
 	@Test(expected = NotAcceptedCoinException.class)
 	public void testInsertPennyShouldReturnNotAcceptedCoinException() throws NotAcceptedCoinException {
+		//TODO check penny inserted into coin return
 		machine.insert(Coin.PENNY);
 	}
 	

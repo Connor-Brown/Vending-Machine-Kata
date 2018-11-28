@@ -8,6 +8,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import exceptions.InvalidProductException;
+import exceptions.NotAcceptedCoinException;
+import model.Coin;
 import service.VendingMachine;
 
 public class ProductSelectionTest {
@@ -29,35 +31,63 @@ public class ProductSelectionTest {
 	}
 	
 	@Test
-	public void testPressColaButtonShouldReturnSelectedProductAsCola() throws InvalidProductException {
-		machine.select("Cola");
-		assertEquals("Cola", machine.getSelectedProductName());
-		assertEquals(new Double(1), machine.getSelectedProductPrice());
+	public void testPressColaButtonWithNoMoneyInsertedShouldReturnNull() throws InvalidProductException {
+		assertEquals(null, machine.select("Cola"));
 	}
 	
 	@Test
-	public void testPressChipsButtonShouldReturnSelectedProductAsChips() throws InvalidProductException {
-		machine.select("Chips");
-		assertEquals("Chips", machine.getSelectedProductName());
-		assertEquals(new Double(.5), machine.getSelectedProductPrice());
+	public void testPressChipsButtonWithNoMoneyInsertedShouldReturnNull() throws InvalidProductException {
+		assertEquals(null, machine.select("Chips"));
 	}
 	
 	@Test
-	public void testPressCandyButtonShouldReturnSelectedProductAsCandy() throws InvalidProductException {
-		machine.select("Candy");
-		assertEquals("Candy", machine.getSelectedProductName());
-		assertEquals(new Double(.65), machine.getSelectedProductPrice());
+	public void testPressCandyButtonWithNoMoneyInsertedShouldReturnNull() throws InvalidProductException {
+		assertEquals(null, machine.select("Candy"));
+	}
+	
+	@Test
+	public void testPressColaButtonWithNotEnoughMoneyInsertedShouldReturnNull() throws InvalidProductException {
+		assertEquals(null, machine.select("Cola"));
+	}
+	
+	@Test
+	public void testPressChipsButtonWithNotEnoughMoneyInsertedShouldReturnNull() throws InvalidProductException {
+		assertEquals(null, machine.select("Chips"));
+	}
+	
+	@Test
+	public void testPressCandyButtonWithNotEnoughMoneyInsertedShouldReturnNull() throws InvalidProductException {
+		assertEquals(null, machine.select("Candy"));
+	}
+	
+	@Test
+	public void testPressColaButtonWithExactleyEnoughMoneyInsertedShouldReturnCola() throws InvalidProductException, NotAcceptedCoinException {
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		assertEquals("Cola", machine.select("Cola"));
+	}
+	
+	@Test
+	public void testPressChipsButtonWithExactleyEnoughMoneyInsertedShouldReturnChips() throws InvalidProductException, NotAcceptedCoinException {
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		assertEquals("Chips", machine.select("Chips"));
+	}
+	
+	@Test
+	public void testPressCandyButtonWithExactleyEnoughMoneyInsertedShouldReturnCandy() throws InvalidProductException, NotAcceptedCoinException {
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.NICKEL);
+		assertEquals("Candy", machine.select("Candy"));
 	}
 	
 	@Test(expected = InvalidProductException.class)
 	public void testPressInvalidButtonShouldThrowInvalidProductException() throws InvalidProductException {
-		machine.select("Bacon");
-	}
-	
-	@Test
-	public void testGetSelectedProductWithoutPressingButtonShouldReturnNull() {
-		assertEquals(null, machine.getSelectedProductName());
-		assertEquals(null, machine.getSelectedProductPrice());
+		machine.select("Bacon"); //Unfortunately, bacon isn't in the machine...
 	}
 	
 	//TODO check selected product is null after purchase

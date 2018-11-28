@@ -13,7 +13,6 @@ public class VendingMachine {
 	private int dimeCount;
 	private int quarterCount;
 	private Map<String, Double> products;
-	private String selectedProduct;
 	private String display;
 	private double currentInsertedAmount;
 	private boolean hasTemporaryDisplay;
@@ -72,28 +71,27 @@ public class VendingMachine {
 		return products;
 	}
 
-	public void select(String product) throws InvalidProductException {
+	public String select(String product) throws InvalidProductException {
 		if(!products.containsKey(product))
 			throw new InvalidProductException("The vending machine does not contain "+product);
-		selectedProduct = product;
-		if(hasEnoughMoneyForProduct()) {
+		String returner = null;
+		if(hasEnoughMoneyForProduct(product)) {
+			//TODO send extra amount to coin return
 			display = "THANK YOU";
+			returner = product;
 		} else {
-			display = "PRICE $"+String.format("%.2f", products.get(selectedProduct));
+			display = "PRICE $"+String.format("%.2f", getSelectedProductPrice(product));
 		}
 		hasTemporaryDisplay = true;
+		return returner;
 	}
 
-	private boolean hasEnoughMoneyForProduct() {
-		return currentInsertedAmount >= products.get(selectedProduct);
-	}
-
-	public String getSelectedProductName() {
-		return selectedProduct;
+	private boolean hasEnoughMoneyForProduct(String product) {
+		return currentInsertedAmount >= getSelectedProductPrice(product);
 	}
 	
-	public Double getSelectedProductPrice() {
-		return products.get(selectedProduct);
+	private Double getSelectedProductPrice(String product) {
+		return products.get(product);
 	}
 
 	public String getDisplay() {
