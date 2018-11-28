@@ -2,13 +2,13 @@ package machineFeaturesTest;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import exceptions.InvalidProductException;
-import exceptions.NotAcceptedCoinException;
 import model.Coin;
 import service.VendingMachine;
 
@@ -61,28 +61,31 @@ public class ProductSelectionTest {
 	}
 	
 	@Test
-	public void testPressColaButtonWithExactleyEnoughMoneyInsertedShouldReturnCola() throws InvalidProductException, NotAcceptedCoinException {
+	public void testPressColaButtonWithExactleyEnoughMoneyInsertedShouldReturnCola() throws InvalidProductException {
 		machine.insert(Coin.QUARTER);
 		machine.insert(Coin.QUARTER);
 		machine.insert(Coin.QUARTER);
 		machine.insert(Coin.QUARTER);
 		assertEquals("Cola", machine.select("Cola"));
+		assertEquals(0, machine.coinListToPrice(machine.emptyCoinReturn()), 0.001);
 	}
 	
 	@Test
-	public void testPressChipsButtonWithExactleyEnoughMoneyInsertedShouldReturnChips() throws InvalidProductException, NotAcceptedCoinException {
+	public void testPressChipsButtonWithExactleyEnoughMoneyInsertedShouldReturnChips() throws InvalidProductException {
 		machine.insert(Coin.QUARTER);
 		machine.insert(Coin.QUARTER);
 		assertEquals("Chips", machine.select("Chips"));
+		assertEquals(0, machine.coinListToPrice(machine.emptyCoinReturn()), 0.001);
 	}
 	
 	@Test
-	public void testPressCandyButtonWithExactleyEnoughMoneyInsertedShouldReturnCandy() throws InvalidProductException, NotAcceptedCoinException {
+	public void testPressCandyButtonWithExactleyEnoughMoneyInsertedShouldReturnCandy() throws InvalidProductException {
 		machine.insert(Coin.QUARTER);
 		machine.insert(Coin.QUARTER);
 		machine.insert(Coin.DIME);
 		machine.insert(Coin.NICKEL);
 		assertEquals("Candy", machine.select("Candy"));
+		assertEquals(0, machine.coinListToPrice(machine.emptyCoinReturn()), 0.001);
 	}
 	
 	@Test(expected = InvalidProductException.class)
@@ -90,6 +93,56 @@ public class ProductSelectionTest {
 		machine.select("Bacon"); //Unfortunately, bacon isn't in the machine...
 	}
 	
-	//TODO check selected product is null after purchase
+	@Test
+	public void testPressColaButtonWithMoreThanEnoughMoneyInsertedShouldReturnColaAndExtraMoney() throws InvalidProductException {
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.NICKEL);
+		assertEquals("Cola", machine.select("Cola"));
+		assertEquals(.40, machine.coinListToPrice(machine.emptyCoinReturn()), .001);
+	}
 	
+	@Test
+	public void testPressChipsButtonWithMoreThanEnoughMoneyInsertedShouldReturnChipsAndExtraMoney() throws InvalidProductException {
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.NICKEL);
+		assertEquals("Chips", machine.select("Chips"));
+		assertEquals(.15, machine.coinListToPrice(machine.emptyCoinReturn()), .001);
+	}
+	
+	@Test
+	public void testPressCandyButtonWithMoreThanEnoughMoneyInsertedShouldReturnCandyAndExtraMoney() throws InvalidProductException {
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.NICKEL);
+		machine.insert(Coin.NICKEL);
+		assertEquals("Candy", machine.select("Candy"));
+		assertEquals(.50, machine.coinListToPrice(machine.emptyCoinReturn()), .001);
+	}
+	
+	@Test
+	public void testPressReturnCoinsButtonWithNoInputtedCoinsShouldReturnEmptyList() {
+		machine.returnCoins();
+		assertEquals(new ArrayList<Coin>(), machine.emptyCoinReturn());
+	}
+	
+	@Test
+	public void testPressReturnCoinsButtonWith40CentsInsertedShouldReturn40Cents() {
+		machine.insert(Coin.QUARTER);
+		machine.insert(Coin.DIME);
+		machine.insert(Coin.NICKEL);
+		machine.returnCoins();
+		assertEquals(.40, machine.coinListToPrice(machine.emptyCoinReturn()), .001);
+	}
+
 }
