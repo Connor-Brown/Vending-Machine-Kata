@@ -18,7 +18,7 @@ public class StartApp {
 			printDisplay();
 			String input = getUserInput();
 			while (input == null) {
-				System.out.println("I don't recognize that command.");
+				System.out.println("I don't recognize that command. Type 'help' for a list of commands");
 				input = getUserInput();
 			}
 			// if(input == null) //check if user input doesn't match any command
@@ -71,8 +71,22 @@ public class StartApp {
 	}
 
 	private static void help() {
-		// TODO list all commands
-		System.out.println("ALL COMMANDS HERE");
+		System.out.println("List of commands: \n"
+				+ "     help                    - displays the help screen\n"
+				+ "     display                 - prints the display\n"
+				+ "     insert [coin]           - inserts the given coin into the machine. Insertable coins include Quarter, Dime, Nickel, and Penny (although penny is immediately returned)\n"
+				+ "     select [product]        - attempts to return the given product. Only works if there is enough coins in the machine\n"
+				+ "     return coins            - presses the coin return button on the vending machine\n"
+				+ "     empty coin return area  - user gets any coins that are in the coin return area\n"
+				+ "     get products            - shows a list of all the products in the machine along with their prices and amounts\n"
+				+ "     quit                    - exits the application\n"
+				+ "\n"
+				+ "List of commands for testing:\n"
+				+ "     clear products          - clears any amount of products currently in the machine, but keeps a reference to the product type and price\n"
+				+ "     clear coins             - clears any coins currently in the machine, except for coins inserted by the user\n"
+				+ "     get coins               - shows the amount of each type of coin the machine holds\n"
+				+ "     refresh coins           - sets the amount of coins in the machine to their starting values\n"
+				+ "     refresh products        - sets the amount of each product in the machine to their starting values");
 	}
 
 	private static void refreshProducts() {
