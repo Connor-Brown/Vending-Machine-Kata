@@ -507,14 +507,21 @@ public class VendingMachine {
 		nickelCount = 0;
 		dimeCount = 0;
 		quarterCount = 0;
-
-		// currently converts all inserted amount to nickels as there is currently not a
-		// memory for exactly what coins are inserted
-		double temp = coinListToPrice(insertedCoins);
-		double nickelAmount = coinToPrice(Coin.NICKEL);
-		while (temp - nickelAmount >= 0) {
-			nickelCount += nickelAmount;
-			temp -= nickelAmount;
+		
+		for(Coin c : insertedCoins) {
+			switch(c) {
+			case NICKEL:
+				nickelCount++;
+				break;
+			case DIME:
+				dimeCount++;
+				break;
+			case QUARTER:
+				quarterCount++;
+				break;
+			default:
+				break;
+			}
 		}
 	}
 
