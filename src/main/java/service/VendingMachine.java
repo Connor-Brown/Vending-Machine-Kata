@@ -136,6 +136,13 @@ public class VendingMachine {
 	public Map<String, Double> getProductMap() {
 		return products;
 	}
+	
+	/**
+	 * @return The map of the products in the vending machine with the amount currently in the machine
+	 */
+	public Map<String, Integer> getProductCount() {
+		return productCount;
+	}
 
 	/**
 	 * @return The map of the products in the vending machine with their amount
@@ -165,15 +172,18 @@ public class VendingMachine {
 		switch (product) {
 		case "Cola":
 			products.put("Cola", new Double(1));
+			productCount.put(product, amount + beforeValue); // putting this line within the switch to ensure no random
+																// products get added
 			break;
 		case "Chips":
 			products.put("Chips", new Double(.5));
+			productCount.put(product, amount + beforeValue);
 			break;
 		case "Candy":
 			products.put("Candy", new Double(.65));
+			productCount.put(product, amount + beforeValue);
 			break;
 		}
-		productCount.put(product, amount + beforeValue);
 	}
 
 	/**
@@ -242,7 +252,7 @@ public class VendingMachine {
 		// Not returning pennies as they can't be inserted
 		return changeToMake;
 	}
-	
+
 	/**
 	 * Used in makeChangeForCoinReturn(Double amountToMake) to chain together the
 	 * process of adding the different coins to the coin return area

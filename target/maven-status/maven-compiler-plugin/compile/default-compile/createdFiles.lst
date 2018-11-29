@@ -1,4 +1,5 @@
 model\Coin.class
 exceptions\InvalidProductException.class
+start\StartApp.class
 service\VendingMachine$1.class
 service\VendingMachine.class
